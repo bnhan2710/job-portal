@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/user.schema';
+import { User } from './schemas/users.schema';
 import { Model } from 'mongoose';
-import { genSaltSync, hashSync } from 'bcryptjs';
+import { genSaltSync, hashSync ,compareSync } from 'bcryptjs';
 
 @Injectable()
-export class UserService {
+export class UsersService {
     constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
     private genHashPassword(password: string): string {
@@ -93,6 +93,16 @@ export class UserService {
                 err: error,
             };
         }
+    }
+     
+    async findOnebyUsername(username:string){
+        return this.userModel.findOne({
+            email:username
+        })
+    }
+
+    async checkUserPassword(password:string,hash:string){
+       return compareSync(password,hash)
     }
 
     async update(id: string, updateUserDto: UpdateUserDto) {

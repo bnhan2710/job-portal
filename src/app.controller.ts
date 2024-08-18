@@ -22,7 +22,7 @@ export class AppController {
     return this.appService.getHello();
   }
   @Public()
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(LocalAuthGuard)//use local strategy
   @Post('auth/login')
   handleLogin(@Request() req){
     return this.authService.login(req.user._doc)

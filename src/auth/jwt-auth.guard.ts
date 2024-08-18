@@ -7,8 +7,11 @@ import { IS_PUBLIC_KEY } from 'src/decorator/customize';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
     constructor(private reflector: Reflector) {
+      //inject reflector
         super();
       }
+      //check if the route is public or not
+
     canActivate(context: ExecutionContext) {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(),
@@ -22,7 +25,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       }
     
       handleRequest(err, user, info) {
-        //throw an exception based on either "info" or "err" arguments
+        //if error or user is not found
         if (err || !user) {
           throw err || new UnauthorizedException("Token is not valid");
         }

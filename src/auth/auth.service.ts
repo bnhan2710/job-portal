@@ -7,7 +7,7 @@ export class AuthService {
         private usesrService:UsersService,
         private jwtService:JwtService
     ){}
-
+    //check user and password 
     async validateUser(username:string,pass:string):Promise<any>{
             const user = await this.usesrService.findOnebyUsername(username);
             if(user){
@@ -19,6 +19,7 @@ export class AuthService {
             }
             return null
     }
+    //sign and return access_token
     async login(user: any) {
         const payload = { 
             username: user.email, 

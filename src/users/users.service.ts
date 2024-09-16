@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/users.schema';
-import { Model } from 'mongoose';
+import { User, UserDocument } from './schemas/users.schema';
+import { Model, now } from 'mongoose';
 import { genSaltSync, hashSync ,compareSync } from 'bcryptjs';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { identity } from 'rxjs';
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+    constructor(@InjectModel(User.name) 
+    private userModel: SoftDeleteModel<UserDocument>) {}
 
     private genHashPassword(password: string): string {
         const salt = genSaltSync(10);
@@ -28,6 +31,7 @@ export class UsersService {
           const hashPassword = this.genHashPassword(createUserDto.password);
           const user = await this.userModel.create({
               ...createUserDto,
+              createdAt: now(),
               password: hashPassword
           });
           const {password,...other} = user
@@ -130,8 +134,8 @@ export class UsersService {
 
     async remove(id: string) {
         try {
-            const deleteResult = await this.userModel.deleteOne({ _id: id });
-            if (deleteResult.deletedCount === 0) {
+            const deleteResult = await this.userModel.softDelete({_id:id})
+            if (deleteResult.deleted === 0) {
                 return {
                     statusCode: 404,
                     message: 'User Not Found'

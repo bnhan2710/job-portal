@@ -6,7 +6,6 @@ import { User, UserDocument } from './schemas/users.schema';
 import { Model, now } from 'mongoose';
 import { genSaltSync, hashSync ,compareSync } from 'bcryptjs';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { identity } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -23,7 +22,7 @@ export class UsersService {
           const existingUser = await this.userModel.findOne({ email: createUserDto.email });
           if (existingUser) {
               return {
-                  statusCode: 400,
+                  statusCode: 409,
                   message: 'User with this email already exists',
               };
           }

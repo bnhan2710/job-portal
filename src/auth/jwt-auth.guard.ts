@@ -20,14 +20,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           if (isPublic) {
             return true;
           }
-        
+        // if not public, call super.canActivate to check if user is authenticated
         return super.canActivate(context);
       }
     
       handleRequest(err, user, info) {
         //if error or user is not found
         if (err || !user) {
-          throw err || new UnauthorizedException("Token is not valid");
+          throw err || new UnauthorizedException("You don't have access to this resource, please login first");
         }
         return user;
       }

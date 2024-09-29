@@ -28,7 +28,7 @@ import { CompaniesModule } from './companies/companies.module';
     }),
     UsersModule,
     AuthModule,
-    CompaniesModule,
+    CompaniesModule, 
   ],
   controllers: [AppController],
   providers: [AppService,

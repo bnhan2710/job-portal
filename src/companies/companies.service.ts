@@ -10,26 +10,20 @@ export class CompaniesService {
   constructor(@InjectModel(Company.name) 
   private companyModel: SoftDeleteModel<CompanyDocument>) {}
   async create(createCompanyDto: CreateCompanyDto) {
-      try {
-        const checkExistsCompany = await this.companyModel.findOne({name:createCompanyDto})
-        if(checkExistsCompany){
-          return {
-            statusCode : 409,
-            message: 'Company already exits'
-          }
-        }
-        await this.companyModel.create({
-          createCompanyDto,
-          createdAt: now()
-        }) 
+    try{
+      const existingCompany = await this.companyModel.findOne({ name: createCompanyDto.name });
+      if(existingCompany){
         return {
-          statusCode :201,
-          message: 'Created new company successfully'
-        }
-
-      }catch(err){
-        console.log(err)
+          statusCode: 409,
+          message: 'Company with this name already exists',
+        };
       }
+      const company = new this.companyModel(createCompanyDto);
+      const createdCompany = await company.save();
+      return createdCompany;
+    }catch(error){
+      return error
+    }
   }
 
   findAll() {

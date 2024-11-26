@@ -105,7 +105,7 @@ export class UsersService {
     }
 
     async checkUserPassword(password:string,hash:string){
-       return compareSync(password,hash)
+     return await compareSync(password,hash)
     }
 
     async update(id: string, updateUserDto: UpdateUserDto) {

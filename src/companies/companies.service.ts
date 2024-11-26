@@ -1,28 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Company, CompanyDocument } from './schemas/company.schema'; 
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { now } from 'mongoose';
+
+import { IUser } from 'src/users/users.interface';
 @Injectable()
 export class CompaniesService {
   constructor(@InjectModel(Company.name) 
   private companyModel: SoftDeleteModel<CompanyDocument>) {}
-  async create(createCompanyDto: CreateCompanyDto) {
+  async create(createCompanyDto: CreateCompanyDto, user:IUser) {
     try{
-      const existingCompany = await this.companyModel.findOne({ name: createCompanyDto.name });
-      if(existingCompany){
-        return {
-          statusCode: 409,
-          message: 'Company with this name already exists',
-        };
+      const existCompany = await this.companyModel.findOne({ name: createCompanyDto.name });
+      if(existCompany){
+        throw new ConflictException('Company already exits')
       }
-      const company = new this.companyModel(createCompanyDto);
+      const company = new this.companyModel({...createCompanyDto,
+        createdBy: {
+          _id: user._id,
+          email: user.email
+        }
+      })
       const createdCompany = await company.save();
       return createdCompany;
-    }catch(error){
-      return error
+    }catch(err){
+          err 
     }
   }
 
@@ -32,10 +35,22 @@ export class CompaniesService {
 
   findOne(id: number) {
     return `This action returns a #${id} company`;
-  }
-
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
-    return `This action updates a #${id} company`;
+  } 
+  
+  async update(id: string, updateCompanyDto: UpdateCompanyDto, user : IUser) {
+    try{  
+      const company = await this.companyModel.findById(id)
+      if(!company){
+        throw new NotFoundException('Company Not Found')
+      }
+    return await this.companyModel.updateOne({ _id: id }, {...updateCompanyDto, 
+      createdBy: {
+        _id:user._id,
+        email: user.email
+      }})  
+    }catch(err){
+      return err
+    }
   }
 
   remove(id: number) {

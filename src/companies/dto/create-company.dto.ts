@@ -10,3 +10,4 @@ export class CreateCompanyDto {
     @IsNotEmpty()
     description: string;
 }
+

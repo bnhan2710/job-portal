@@ -5,14 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {cors:true});
   const configService = app.get(ConfigService);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(configService.get('PORT'));
-  const reflector = app.get( Reflector );
-  app.useGlobalGuards( new JwtAuthGuard( reflector ));
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards( new JwtAuthGuard(reflector));
   app.enableCors({
     "origin": "*",
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",

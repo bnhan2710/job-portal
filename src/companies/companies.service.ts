@@ -4,8 +4,8 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Company, CompanyDocument } from './schemas/company.schema'; 
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-
-import { IUser } from 'src/users/users.interface';
+import { IUser } from '../users/users.interface';
+import aqp from 'api-query-params';
 @Injectable()
 export class CompaniesService {
   constructor(@InjectModel(Company.name) 
@@ -25,17 +25,46 @@ export class CompaniesService {
       const createdCompany = await company.save();
       return createdCompany;
     }catch(err){
-          err 
+          return err
+    }
+  }
+  
+  async findAll(currentPage:number, limit:number, qs:string ) {
+    const {filter, skip, sort, projection, population } = aqp(qs)
+    delete filter.page;
+    delete filter.limit
+
+    let defaultLimit = limit ? limit: 10
+    const totalItems = (await this.companyModel.find(filter)).length
+    const totalPage = Math.ceil(totalItems / defaultLimit)
+
+    const result = await this.companyModel.find(filter)
+      .skip(currentPage - 1)
+      .limit(defaultLimit)
+      .sort(sort as any )
+      .populate(population)
+      .exec()
+
+    return {
+      metadata:{ 
+        current: currentPage,
+        pageSize: limit,
+        total: totalItems
+      },
+      result
     }
   }
 
-  findAll() {
-    return `This action returns all companies`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} company`;
-  } 
+  async findOne(id: string) {
+    try{
+    const company = await this.companyModel.findById(id)
+    if(!company) {
+      throw new NotFoundException('Company Not Found');
+    }
+    }catch(err){
+    return err
+}
+    } 
   
   async update(id: string, updateCompanyDto: UpdateCompanyDto, user : IUser) {
     try{  
@@ -53,7 +82,24 @@ export class CompaniesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} company`;
+  async remove(id: string, user: IUser) {
+      try{
+        const company = await this.companyModel.findById(id)
+        if(!company){
+          throw new NotFoundException('Company Not Found')
+        }
+        return await this.companyModel.updateOne({_id:id}, 
+          {
+            deletedBy:
+            {
+              _id:user._id,
+              email: user.email
+            },
+            isDeleted: true,
+            deletedAt: new Date()
+          })
+      }catch(err){
+        return err
+      }
   }
 }

@@ -48,7 +48,6 @@ export class UsersService {
       }
   }
   
-
   async findAll() {
     try {
         const users = await this.userModel.find();

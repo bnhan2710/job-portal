@@ -3,7 +3,7 @@ import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { User } from '../decorator/customize';
+import { ResponseMessage, User } from '../decorator/customize';
 import { IUser } from '../users/users.interface';
 
 @Controller('companies')
@@ -15,6 +15,7 @@ export class CompaniesController {
   }
 
   @Get()
+  @ResponseMessage("Fetch list company with paginate")
   findAll(
     @Query("page") currentPage: string,
     @Query("limit") limit: string,

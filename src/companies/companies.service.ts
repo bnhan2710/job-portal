@@ -33,13 +33,13 @@ export class CompaniesService {
     const {filter, skip, sort, projection, population } = aqp(qs)
     delete filter.page;
     delete filter.limit
-
+    let offset = (currentPage - 1) * (limit);
     let defaultLimit = limit ? limit: 10
     const totalItems = (await this.companyModel.find(filter)).length
     const totalPage = Math.ceil(totalItems / defaultLimit)
 
     const result = await this.companyModel.find(filter)
-      .skip(currentPage - 1)
+      .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any )
       .populate(population)
@@ -49,7 +49,8 @@ export class CompaniesService {
       metadata:{ 
         current: currentPage,
         pageSize: limit,
-        total: totalItems
+        total: totalItems,
+        totalPage
       },
       result
     }

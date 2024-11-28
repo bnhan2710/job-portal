@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { BadGatewayException, BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/users.schema';
-import { Model, now } from 'mongoose';
+import mongoose, { Model, now } from 'mongoose';
 import { genSaltSync, hashSync ,compareSync } from 'bcryptjs';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { NotFoundError } from 'rxjs';
+import { IUser } from './users.interface';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class UsersService {
@@ -18,137 +21,116 @@ export class UsersService {
     }
 
     async create(createUserDto: CreateUserDto) {
-      try {
-          const existingUser = await this.userModel.findOne({ email: createUserDto.email });
-          if (existingUser) {
-              return {
-                  statusCode: 409,
-                  message: 'User with this email already exists',
-              };
-          }
-  
-          const hashPassword = this.genHashPassword(createUserDto.password);
-          const user = await this.userModel.create({
-              ...createUserDto,
-              createdAt: now(),
-              password: hashPassword
-          });
-          const {password,...other} = user
-          return {
-              statusCode: 201,
-              message: 'User created successfully',
-              user,
-          };
-      } catch (error) {
-          return {
-              statusCode: 500,
-              message: 'Create User Failed',
-              err: error,
-          };
-      }
+        const isExist = await this.userModel.findOne({email:createUserDto.email})
+        if(isExist){
+            throw new BadRequestException('Email already exist!')
+        }
+        const hashPassword = this.genHashPassword(createUserDto.password)
+        const user = await this.userModel.create({
+            ...createUserDto,
+            password:hashPassword
+        })
+        const {_id, createdAt} = user 
+        return {
+            _id,
+            createdAt
+        }
   }
   
-  async findAll() {
-    try {
-        const users = await this.userModel.find();
-        if (!users || users.length === 0) {
-            return {
-                statusCode: 404,
-                message: 'There are no users',
-            };
+  async register(registerDto: RegisterDto){
+        const emailExist = await this.findOnebyUsername(registerDto.email)
+        if(emailExist){
+            throw new BadRequestException('Email already exist!')
         }
-        const usersWithoutPassword = users.map(user => {
-            const { password, ...other } = user.toObject();
-            return other;
-        });
-        return {
-            statusCode: 200,
-            users: usersWithoutPassword,
-        };
-    } catch (error) {
-        return {
-            statusCode: 500,
-            message: 'Find All Users Failed',
-        };
+        const hashPassword = this.genHashPassword(registerDto.password)
+          return await this.userModel.create({
+            ...registerDto,
+            password:hashPassword,
+            role: 'USER'
+        })
+}
+
+  async findAll(currentPage: number,limit: number, qs: string) {
+    const {filter, skip, sort, projection, population } = aqp(qs)
+    delete filter.page;
+    delete filter.limit
+
+    let offset = (currentPage - 1) * (limit);
+    let defaultLimit = limit ? limit: 10
+    const totalItems = (await this.userModel.find(filter)).length
+    const totalPage = Math.ceil(totalItems / defaultLimit)
+
+    const result = await this.userModel.find(filter)
+      .skip(offset)
+      .limit(defaultLimit)
+      .sort(sort as any )
+      .select('-password')
+      .populate(population)
+      .exec()
+
+    return {
+      metadata:{ 
+        current: currentPage,
+        pageSize: limit,
+        total: totalItems,
+        totalPage
+      },
+      result
     }
+    
 }
 
 
-    async findOne(id: string) {
-        try {
-            const user = await this.userModel.findById(id);
-            if (!user) {
-                return {
-                    statusCode: 404,
-                    message: 'User Not Found'
-                };
-            }
-            const { password, ...other } = user.toObject();
-            return {
-                statusCode: 200,
-                user: other
-            };
-        } catch (error) {
-            return {
-                statusCode: 500,
-                message: 'Find User Failed',
-                err: error,
-            };
-        }
-    }
+async findOne(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return `Not found user with id ${id}`
+    return this.userModel.findOne({
+      _id: id
+    })
+      .select("-password")
+      .populate({ path: "role", select: { name: 1, _id: 1 } })
+  }
      
     async findOnebyUsername(username:string){
         return this.userModel.findOne({
-            email:username
-        })
+            email: username
+          }).populate({ path: "role", select: { name: 1 } })
     }
 
     async checkUserPassword(password:string,hash:string){
      return await compareSync(password,hash)
     }
 
-    async update(id: string, updateUserDto: UpdateUserDto) {
-        try {
-            const update = await this.userModel.updateOne({ _id: id }, { $set: updateUserDto });
-            if (update.modifiedCount === 0) {
-                return {
-                    statusCode: 404,
-                    message: 'User Not Found or No Changes Made',
-                };
-            }
-            return {
-                statusCode: 200,
-                message: 'Update Successfully',
-                metadata: update,
-            };
-        } catch (error) {
-            return {
-                statusCode: 500,
-                message: 'Update Failed',
-                err: error,
-            };
+    async update(id: string, updateUserDto: UpdateUserDto ,user: IUser ) {
+        const existUser = await this.userModel.findById(id)
+        if(!existUser || existUser.$isDeleted){
+            throw new NotFoundException('User not found')
         }
+        return await this.userModel.updateOne({_id:id},
+            {
+                ...updateUserDto,
+                updatedBy:{
+                    _id: user._id,
+                    email: user.email
+                }
+            })
     }
 
-    async remove(id: string) {
-        try {
-            const deleteResult = await this.userModel.softDelete({_id:id})
-            if (deleteResult.deleted === 0) {
-                return {
-                    statusCode: 404,
-                    message: 'User Not Found'
-                };
-            }
-            return {
-                statusCode: 200,
-                message: 'User Removed Successfully',
-            };
-        } catch (error) {
-            return {
-                statusCode: 500,
-                message: 'Remove Failed',
-                err: error,
-            };
+    async remove(id: string, user: IUser ) {
+        const existUser = await this.userModel.findById(id)
+        if(!existUser){
+            throw new NotFoundException('User not found')
         }
-    }
+        await this.userModel.updateOne(
+            { _id: id },
+            {
+              deletedBy: {
+                _id: user._id,
+                email: user.email
+              }
+            })
+          return this.userModel.softDelete({
+            _id: id,
+          })
+    }   
 }

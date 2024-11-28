@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { IUser } from '../users/users.interface';
+import { genSaltSync, hashSync } from 'bcryptjs';
+import { RegisterDto } from '../users/dto/create-user.dto';
 @Injectable()
 export class AuthService {
     constructor(
         private usesrService:UsersService,
-        private jwtService:JwtService
+        private jwtService:JwtService,
     ){}
+
     //check user and password 
     async validateUser(username:string,pass:string):Promise<any>{
             const user = await this.usesrService.findOnebyUsername(username);
@@ -40,6 +43,14 @@ export class AuthService {
           role
         };
       }
-    
+
+    async register(registerDto:RegisterDto){
+        let result = await this.usesrService.register(registerDto)
+        const {_id, createdAt} = result
+        return{
+            _id,
+            createdAt
+        }
+    }
     
 }

@@ -52,8 +52,8 @@ export class UsersService {
 
   async findAll(currentPage: number,limit: number, qs: string) {
     const {filter, skip, sort, projection, population } = aqp(qs)
-    delete filter.page;
-    delete filter.limit
+    delete filter.current;
+    delete filter.pageSize;
 
     let offset = (currentPage - 1) * (limit);
     let defaultLimit = limit ? limit: 10
@@ -133,4 +133,14 @@ async findOne(id: string) {
             _id: id,
           })
     }   
+
+    updateUserToken = async(refresh_token: string, _id: string) => {
+      return await this.userModel.updateOne({_id},
+        { refreshToken: refresh_token }
+      )
+    }
+
+    findUserByToken = async(refresh_token: string) => {
+      return await this.userModel.findOne({refreshToken:refresh_token})
+    }
 }

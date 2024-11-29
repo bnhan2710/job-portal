@@ -28,7 +28,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       handleRequest(err, user, info) {
         //if error or user is not found
         if (err || !user) {
-          throw err || new UnauthorizedException("You are not authentication, please login first");
+          throw err || new UnauthorizedException("Token is invalid or expired");
         }
         return user;
       }

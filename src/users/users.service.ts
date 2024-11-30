@@ -69,7 +69,7 @@ export class UsersService {
       .exec()
 
     return {
-      metadata:{ 
+      meta:{ 
         current: currentPage,
         pageSize: limit,
         total: totalItems,
@@ -88,13 +88,12 @@ async findOne(id: string) {
       _id: id
     })
       .select("-password")
-      .populate({ path: "role", select: { name: 1, _id: 1 } })
   }
      
     async findOnebyUsername(username:string){
         return this.userModel.findOne({
             email: username
-          }).populate({ path: "role", select: { name: 1 } })
+          })
     }
 
     async checkUserPassword(password:string,hash:string){

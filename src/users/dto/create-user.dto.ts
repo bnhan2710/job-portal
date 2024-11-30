@@ -12,26 +12,26 @@ class Company{
 
 export class CreateUserDto {
     
-    @IsNotEmpty({ message: 'Name should not be empty' })
+    @IsNotEmpty({ message: 'Name cannot be empty' })
     name: string;
  
-    @IsEmail({}, { message: 'Email must be a valid email address ' })
-    @IsNotEmpty({ message: 'Email should not be empty' })
+    @IsEmail({}, { message: 'Email must be a valid email address'})
+    @IsNotEmpty({ message: 'Email cannot be empty' })
     email: string;
     
-    @IsNotEmpty({ message: 'Password should not be empty' })
+    @IsNotEmpty({ message: 'Password cannot be empty' })
     password: string;
     
-    @IsNotEmpty({message: 'Age should not be empty'})
+    @IsNotEmpty({message: 'Age cannot be empty'})
     age: number
 
-    @IsNotEmpty({message: 'Gender should not be empty'})
+    @IsNotEmpty({message: 'Gender cannot be empty'})
     gender: string
 
-    @IsNotEmpty({message: 'Address should not be empty'})
+    @IsNotEmpty({message: 'Address cannot be empty'})
     address: string
     
-    @IsNotEmpty({message: 'Role should not be empty'})
+    @IsNotEmpty({message: 'Role cannot be empty'})
     role:string
 
     @IsNotEmptyObject()
@@ -44,23 +44,23 @@ export class CreateUserDto {
 
 export class RegisterDto {
     
-    @IsNotEmpty({ message: 'Name should not be empty' })
+    @IsNotEmpty({ message: 'Name cannot be empty' })
     name: string;
  
     @IsEmail({}, { message: 'Email must be a valid email address ' })
-    @IsNotEmpty({ message: 'Email should not be empty' })
+    @IsNotEmpty({ message: 'Email cannot be empty' })
     email: string;
     
-    @IsNotEmpty({ message: 'Password should not be empty' })
+    @IsNotEmpty({ message: 'Password cannot be empty' })
     password: string;
     
-    @IsNotEmpty({message: 'Age should not be empty'})
+    @IsNotEmpty({message: 'Age cannot be empty'})
     age: number
 
-    @IsNotEmpty({message: 'Gender should not be empty'})
+    @IsNotEmpty({message: 'Gender cannot be empty'})
     gender: string
 
-    @IsNotEmpty({message: 'Address should not be empty'})
+    @IsNotEmpty({message: 'Address cannot be empty'})
     address: string
     
 }

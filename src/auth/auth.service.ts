@@ -44,10 +44,9 @@ export class AuthService {
         const refresh_token = this.createRefreshToken(payload)
     
         await this.usesrService.updateUserToken(refresh_token,_id)
-
         response.cookie('refresh_token', refresh_token, { 
             httpOnly:true,
-            maxAge:ms(this.configService.get<string>('JWT_ACCESS_EXPIRE'))
+            maxAge:ms(this.configService.get<string>('JWT_REFRESH_EXPIRE'))
         })
 
         return {
@@ -80,7 +79,7 @@ export class AuthService {
     processNewToken = async (refeshToken: string,response:Response) => {
         try{
        this.jwtService.verify(refeshToken , {
-                secret: this.configService.get<string>("JWT_REFRESH_KEY ")
+                secret: this.configService.get<string>("JWT_REFRESH_KEY")
             })
             let user = await this.usesrService.findUserByToken(refeshToken)
             if(!user){
@@ -102,9 +101,8 @@ export class AuthService {
             response.clearCookie("refresh_token")
             response.cookie('refresh_token', refresh_token, { 
                 httpOnly:true,
-                maxAge:ms(this.configService.get<string>('JWT_ACCESS_EXPIRE'))
+                maxAge:ms(this.configService.get<string>('JWT_REFRESH_EXPIRE'))
             })
-    
             return {
               access_token: this.jwtService.sign(payload),
               user:{
@@ -115,7 +113,7 @@ export class AuthService {
               }
             };
         }catch(err){
-            throw new BadRequestException('`Refreshtoken is invalid')
+            throw new BadRequestException('Refreshtoken is invalid')
         }
     }
 

@@ -1,50 +1,52 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+
 export type JobDocument = HydratedDocument<Job>
 
 @Schema({ timestamps: true })
 export class Job {
   @Prop()
-  name: string 
- 
+  name: string;
+
   @Prop()
   skills: string[];
-
-  @Prop({ type: Object })
+  
+  @Prop({type: Object})
   company: {
     _id: mongoose.Schema.Types.ObjectId,
-    name: string
+    name: string,
+    location: string
   };
- 
+
   @Prop()
   location: string;
 
   @Prop()
-  salary: number
+  salary: number;
 
   @Prop()
   quantity: number;
 
   @Prop()
-  level: string
+  level: string;
 
   @Prop()
-  description: string
+  description: string;
 
   @Prop()
-  strartDate: Date
+  startDate: Date;
 
   @Prop()
-  eneDate: Date
+  endDate: Date;
 
+  @Prop()
+  isActive: boolean;
+ 
   @Prop({ type: Object })
   updatedBy: {
     _id: mongoose.Schema.Types.ObjectId,
     email: string
   }
-
-  @Prop()
-
 
   @Prop({ type: Object })
   createdBy: {
@@ -57,10 +59,9 @@ export class Job {
     _id: mongoose.Schema.Types.ObjectId,
     email: string
   }
-  
   @Prop()
   createdAt: Date;
-
+  
   @Prop()
   updatedAt: Date;
 

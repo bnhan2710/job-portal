@@ -7,9 +7,6 @@ class Company {
 
     @IsNotEmpty()
     name: string;
-
-    @IsNotEmpty()
-    logo: string;
 }
 export class CreateJobDto {
     @IsNotEmpty({
@@ -67,7 +64,7 @@ export class CreateJobDto {
     startDate: Date;
 
     @IsNotEmpty({
-        message: "startDate cannot be empty"
+        message: "endDate cannot be empty"
     })
     @Transform(({ value }) => new Date(value))
     @IsDate({ message: "endDate must be Date" })

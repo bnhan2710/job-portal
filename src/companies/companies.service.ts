@@ -11,22 +11,20 @@ export class CompaniesService {
   constructor(@InjectModel(Company.name) 
   private companyModel: SoftDeleteModel<CompanyDocument>) {}
   async create(createCompanyDto: CreateCompanyDto, user:IUser) {
-    try{
       const existCompany = await this.companyModel.findOne({ name: createCompanyDto.name });
-      if(existCompany){
+      if(existCompany || !existCompany.isDeleted){
         throw new ConflictException('Company already exits')
       }
-      const company = new this.companyModel({...createCompanyDto,
+      const newCompany = await this.companyModel.create({...createCompanyDto,
         createdBy: {
           _id: user._id,
           email: user.email
         }
       })
-      const createdCompany = await company.save();
-      return createdCompany;
-    }catch(err){
-          return err
-    }
+      return {
+        _id:newCompany._id,
+        createdAt: newCompany.createdAt
+      };
   }
   
   async findAll(currentPage:number, limit:number, qs:string ) {
@@ -58,50 +56,39 @@ export class CompaniesService {
   }
 
   async findOne(id: string) {
-    try{
     const company = await this.companyModel.findById(id)
-    if(!company) {
+    if(!company || company.isDeleted) {
       throw new NotFoundException('Company Not Found');
     }
-    }catch(err){
-    return err
+    return company
 }
-    } 
+    
   
   async update(id: string, updateCompanyDto: UpdateCompanyDto, user : IUser) {
-    try{  
       const company = await this.companyModel.findById(id)
-      if(!company){
+      if(!company || company.isDeleted){
         throw new NotFoundException('Company Not Found')
       }
     return await this.companyModel.updateOne({ _id: id }, {...updateCompanyDto, 
-      createdBy: {
+      updatedBy: {
         _id:user._id,
         email: user.email
       }})  
-    }catch(err){
-      return err
-    }
   }
 
   async remove(id: string, user: IUser) {
-      try{
         const company = await this.companyModel.findById(id)
-        if(!company){
+        if(!company || company.isDeleted){
           throw new NotFoundException('Company Not Found')
         }
-        return await this.companyModel.updateOne({_id:id}, 
+        await this.companyModel.updateOne({_id:id}, 
           {
             deletedBy:
             {
               _id:user._id,
               email: user.email
-            },
-            isDeleted: true,
-            deletedAt: new Date()
-          })
-      }catch(err){
-        return err
-      }
+            }
+        })
+        return await this.companyModel.softDelete({_id:id})
   }
 }

@@ -56,7 +56,7 @@ export class User {
     _id: mongoose.Schema.Types.ObjectId,
     email: string
   }
-    
+  
   @Prop()
   isDeleted: boolean
  

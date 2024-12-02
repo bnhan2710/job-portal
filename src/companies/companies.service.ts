@@ -6,6 +6,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { IUser } from '../users/users.interface';
 import aqp from 'api-query-params';
+import { log } from 'console';
 @Injectable()
 export class CompaniesService {
   constructor(@InjectModel(Company.name) 
@@ -31,7 +32,7 @@ export class CompaniesService {
     const { filter, sort, projection, population } = aqp(qs);
     delete filter.current;
     delete filter.pageSize;
-
+    
     let offset = (currentPage - 1) * (limit);
     let defaultLimit = limit ? limit: 10
     const totalItems = (await this.companyModel.find(filter)).length

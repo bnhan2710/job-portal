@@ -7,7 +7,6 @@ import { Job, JobDocument } from './schemas/job.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
 import dayjs from 'dayjs';
-import mongoose from 'mongoose';
 dayjs().format();
 @Injectable()
 export class JobsService {

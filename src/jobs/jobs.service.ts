@@ -16,16 +16,17 @@ export class JobsService {
   ) {}
  async create(createJobDto: CreateJobDto , user: IUser) {
     const {  startDate, endDate } = createJobDto
-    mongoose.set('debug', true);
      if(!dayjs(endDate).isAfter(dayjs(startDate))){
       throw new BadRequestException('End date is not valid')
      }
+
     let newJob = await this.jobModel.create({...createJobDto,
       createdBy: {
         _id: user._id,
         email: user.email
       }
     })
+
   return {
     _id: newJob._id,
     createdAt: newJob.createdAt  

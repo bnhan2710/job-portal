@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+
 export type UserDocument = HydratedDocument<User>
+export class IUserSchema {
+  _id: mongoose.Schema.Types.ObjectId;
+  email: string;
+}
 
 @Schema({ timestamps: true })
 export class User {
@@ -51,14 +56,16 @@ export class User {
     _id: mongoose.Schema.Types.ObjectId,
     email: string
   }
+    
+  @Prop()
+  isDeleted: boolean
+ 
   @Prop()
   createdAt: Date;
 
   @Prop()
   updatedAt: Date;
 
-  @Prop()
-  isDeleted: boolean
 
   @Prop()
   deletedAt: Date

@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+import { IUserSchema } from '../../users/schemas/users.schema';
+import { ICompanySchema } from '../../companies/schemas/company.schema';
 
-export type JobDocument = HydratedDocument<Job>
+export type JobDocument = HydratedDocument<Job>;
 
 @Schema({ timestamps: true })
 export class Job {
@@ -9,14 +11,13 @@ export class Job {
   name: string;
 
   @Prop()
+  logo: string;
+
+  @Prop({ type: [String] })
   skills: string[];
-  
-  @Prop({type: Object})
-  company: {
-    _id: mongoose.Schema.Types.ObjectId,
-    name: string,
-    location: string
-  };
+
+  @Prop({ type: Object })
+  company: ICompanySchema;
 
   @Prop()
   location: string;
@@ -41,36 +42,27 @@ export class Job {
 
   @Prop()
   isActive: boolean;
- 
-  @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
 
   @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
+  createdBy: IUserSchema;
 
   @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
+  updatedBy: IUserSchema;
+
+  @Prop({ type: Object })
+  deletedBy: IUserSchema;
+
   @Prop()
   createdAt: Date;
-  
+
   @Prop()
   updatedAt: Date;
 
   @Prop()
-  isDeleted: boolean
+  deletedAt: Date;
 
   @Prop()
-  deletedAt: Date
-
+  isDeleted: boolean;
 }
 
 export const JobSchema = SchemaFactory.createForClass(Job);

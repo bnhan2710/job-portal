@@ -7,13 +7,17 @@ class Company {
 
     @IsNotEmpty()
     name: string;
+
+    @IsNotEmpty()
+    logo:string
 }
 export class CreateJobDto {
+
     @IsNotEmpty({
         message: "Name cannot be empty"
     })
     name: string;
-
+    
     @IsNotEmpty({
         message: "Skill cannot be empty"
     })

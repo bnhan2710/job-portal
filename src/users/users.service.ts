@@ -102,7 +102,7 @@ async findOne(id: string) {
 
     async update(id: string, updateUserDto: UpdateUserDto ,user: IUser ) {
         const existUser = await this.userModel.findById(id)
-        if(!existUser || existUser.$isDeleted){
+        if(!existUser){
             throw new NotFoundException('User not found')
         }
         return await this.userModel.updateOne({_id:id},

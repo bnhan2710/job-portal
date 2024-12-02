@@ -15,6 +15,7 @@ export class JobsController {
     return this.jobsService.create(createJobDto,user);
   }
 
+  @Public()
   @Get()
   @ResponseMessage('Fetch list job with paginate')
   findAll(

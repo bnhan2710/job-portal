@@ -12,7 +12,7 @@ export class CompaniesService {
   private companyModel: SoftDeleteModel<CompanyDocument>) {}
   async create(createCompanyDto: CreateCompanyDto, user:IUser) {
       const existCompany = await this.companyModel.findOne({ name: createCompanyDto.name });
-      if(existCompany || !existCompany.isDeleted){
+      if(existCompany){
         throw new ConflictException('Company already exits')
       }
       const newCompany = await this.companyModel.create({...createCompanyDto,

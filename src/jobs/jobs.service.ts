@@ -11,12 +11,12 @@ import mongoose from 'mongoose';
 dayjs().format();
 @Injectable()
 export class JobsService {
-  constructor(@InjectModel(Job.name)
-  private jobModel: SoftDeleteModel<JobDocument>) {}
+  constructor(
+    @InjectModel(Job.name) private jobModel: SoftDeleteModel<JobDocument>,
+  ) {}
  async create(createJobDto: CreateJobDto , user: IUser) {
     const {  startDate, endDate } = createJobDto
     mongoose.set('debug', true);
-  console.log(createJobDto)
      if(!dayjs(endDate).isAfter(dayjs(startDate))){
       throw new BadRequestException('End date is not valid')
      }
@@ -26,13 +26,12 @@ export class JobsService {
         email: user.email
       }
     })
-
   return {
     _id: newJob._id,
     createdAt: newJob.createdAt  
     }
+  } 
 
-  }
 
  async findAll(currentPage:number, limit:number ,qs:string) {
     const { filter, sort, projection, population } = aqp(qs);

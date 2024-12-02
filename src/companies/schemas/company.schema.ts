@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 export type CompanyDocument = HydratedDocument<Company>;
-
+export class ICompanySchema {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+    logo: string
+  }
 @Schema({ timestamps: true })
 export class Company {
     @Prop()

@@ -15,6 +15,7 @@ export class CompaniesController {
       return this.companiesService.create(createCompanyDto, user);
   }
 
+  @Public()
   @Get()
   @ResponseMessage("Fetch list company with paginate")
   findAll(
@@ -31,6 +32,7 @@ export class CompaniesController {
   findOne(@Param('id') id: string) {
     return this.companiesService.findOne(id);
   }
+  
   @Patch(':id')
   @ResponseMessage("Update Company")
   update(@Param('id') id: string,

@@ -7,6 +7,7 @@ import { Job, JobDocument } from './schemas/job.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
 import dayjs from 'dayjs';
+import mongoose from 'mongoose';
 dayjs().format();
 @Injectable()
 export class JobsService {
@@ -71,10 +72,8 @@ export class JobsService {
   }
 
   async update(id: string, updateJobDto: UpdateJobDto,user:IUser) {
-      const job = await this.jobModel.findById(id)
-      if(!job || job.isDeleted){
-        throw new NotFoundException('Company not found')
-      }
+    if (!mongoose.Types.ObjectId.isValid(id))
+      throw new BadRequestException(`Not found resume with id=${id}`);
       return await this.jobModel.updateOne({_id:id},{...updateJobDto,
         updatedBy: {
           _id: user._id,
@@ -84,10 +83,8 @@ export class JobsService {
   }
 
   async remove(id: string, user: IUser) {
-    const job = await this.jobModel.findById(id)
-    if(!job || job.isDeleted){
-      throw new NotFoundException('Job not found')
-    }
+    if (!mongoose.Types.ObjectId.isValid(id))
+      throw new BadRequestException(`Not found resume with id=${id}`);
     await this.jobModel.updateOne({_id:id}, {
       updatedBy:{
         _id: user._id,

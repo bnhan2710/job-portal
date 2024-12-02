@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Param } from '@nestjs/common';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import { Resume,ResumeDocument } from './schemas/resume.schema';
@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from '../users/users.interface';
 import mongoose from 'mongoose';
+import * as path from 'node:path';
 
 
 @Injectable()
@@ -59,6 +60,7 @@ export class ResumesService {
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any )
+      .select(projection as any)
       .populate(population)
       .exec()
 
@@ -73,18 +75,61 @@ export class ResumesService {
     }
   }
 
- async findOne(id: string) {
+  async findOne(id: string){
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new BadRequestException(`Not found resume with id=${id}`);
-     await this.resumeModel.findOne({ _id: id }).lean();
-     return
+    return await this.resumeModel.find({ _id: id })
   }
   
-  async update(id: number, updateResumeDto: UpdateResumeDto) {
-    return `This action updates a #${id} resume`;
+  async findOneByUser(user:IUser){
+    return await this.resumeModel
+    .find({userId: user._id})
+    .sort('-createdAt')
+    .populate([
+      {
+        path: 'companyId',
+        select: {name: 1}
+      },
+      {
+        path: 'jobId',
+        select: {name: 1}
+      },
+    ])
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} resume`;
+  async update(id: string, updateResumeDto: UpdateResumeDto,user: IUser) {
+    const resume = await this.resumeModel.find({_id: id})
+    if(!resume){
+      throw new BadRequestException(`Not found resume with id = ${id}`)
+    }
+    return await this.resumeModel.updateOne({_id:id},{
+      status:updateResumeDto.status,
+      ...updateResumeDto,
+      updatedBy: {
+        _id: user._id,
+        email: user.email
+      },
+      $push:{
+        history: {
+          status: updateResumeDto.status,
+          updatedBy: {
+            _id: user._id,
+            email: user.email
+          }
+        }
+      }
+    })
   }
+
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id))
+      throw new BadRequestException(`Not found resume with id=${id}`);
+    await this.resumeModel.updateOne({_id: id},{
+      updatedBy:{
+        _id: user._id,
+        email: user.email
+      }
+    })
+    return await this.resumeModel.softDelete({_id:id})
+  }  
 }

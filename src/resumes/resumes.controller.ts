@@ -28,17 +28,32 @@ export class ResumesController {
   }
 
   @Get(':id')
+  @ResponseMessage('Fetch resume by Id')
   findOne(@Param('id') id: string) {
     return this.resumesService.findOne(id);
   }
 
+  @Post('by-user')
+  @ResponseMessage('Fetch resume by Id')
+  findOneByUser(@User() user: IUser) {
+    return this.resumesService.findOneByUser(user);
+  }
+
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateResumeDto: UpdateResumeDto) {
-    return this.resumesService.update(+id, updateResumeDto);
+  @ResponseMessage('Updated resume')
+  update(
+    @Param('id') id: string,
+    @Body() updateResumeDto: UpdateResumeDto,
+    @User() user: IUser)
+    {
+    return this.resumesService.update(id, updateResumeDto,user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.resumesService.remove(+id);
+  @ResponseMessage('Removed resumes')
+  remove(@Param('id') id: string ,@User() user: IUser) {
+    return this.resumesService.remove(id,user);
   }
 }
+ 

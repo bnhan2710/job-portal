@@ -27,10 +27,10 @@ export class Resume {
   status: string
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Company.name })
-  companyId: mongoose.Schema.Types.ObjectId
-  
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: Job.name})
-  jobId: mongoose.Schema.Types.ObjectId
+  companyId: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Job.name })
+  jobId: mongoose.Schema.Types.ObjectId;
   
   @Prop()
   history: IHistorySchema[]

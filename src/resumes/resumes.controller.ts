@@ -22,7 +22,7 @@ export class ResumesController {
   findAll(
     @Query('current') currentPage: string,
     @Query('pageSize') limit: string,
-    @Query('qs') qs: string
+    @Query() qs: string
   ) {
     return this.resumesService.findAll(+currentPage, +limit, qs);
   }

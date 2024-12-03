@@ -83,7 +83,9 @@ export class UsersService {
 
 async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id))
-      return `Not found user with id ${id}`
+    {
+      throw new NotFoundException(`Not found user with id = ${id}`)
+    }
     return this.userModel.findOne({
       _id: id
     })

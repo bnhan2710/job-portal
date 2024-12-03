@@ -67,7 +67,7 @@ async create(createPermissionDto: CreatePermissionDto, user: IUser) {
 
   async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id))
-      throw new NotFoundException(`Not found user with id = ${id}`)
+      throw new NotFoundException(`Not found permission with id = ${id}`)
 
     return await this.permissionModel.findOne({_id:id})
   }

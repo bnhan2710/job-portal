@@ -15,7 +15,7 @@ export class UsersService {
     constructor(@InjectModel(User.name) 
     private userModel: SoftDeleteModel<UserDocument>) {}
 
-    private genHashPassword(password: string): string {
+    public genHashPassword(password: string): string {
         const salt = genSaltSync(10);
         return hashSync(password, salt);
     }
@@ -89,13 +89,14 @@ async findOne(id: string) {
     return this.userModel.findOne({
       _id: id
     })
-      .select("-password")
+    .select("-password")
+    .populate({ path: "role", select: {name:1} })
   }
      
     async findOnebyUsername(username:string){
         return this.userModel.findOne({
             email: username
-          })
+          }).populate({path:"role", select: {name:1, permissions :1}})
     }
 
     async checkUserPassword(password:string,hash:string){
@@ -118,9 +119,13 @@ async findOne(id: string) {
     }
 
     async remove(id: string, user: IUser ) {
-        const existUser = await this.userModel.findById(id)
-        if(!existUser){
+        const foundUser = await this.userModel.findById(id)
+
+        if(!foundUser){
             throw new NotFoundException('User not found')
+        }
+        if(foundUser.email === 'admin@gmail.com'){
+            throw new BadRequestException('Cannot delete Admin account');
         }
         await this.userModel.updateOne(
             { _id: id },

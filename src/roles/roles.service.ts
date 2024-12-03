@@ -68,7 +68,7 @@ export class RolesService {
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new NotFoundException(`Not found permission with id = ${id}`)
     return await this.roleModel.findOne({_id:id})
-    .populate({path: "permissions", select: {_id:1, apiPath:1,name: 1, method:1 }})
+    .populate({path: "permissions", select: {_id:1, apiPath:1,name: 1, method:1, module:1 }})
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto,user:IUser) {
@@ -76,13 +76,6 @@ export class RolesService {
       throw new BadRequestException(`Not found resume with id=${id}`
       );
     }
-
-    const isExist  = await this.roleModel.find({name: updateRoleDto.name})
-    
-    if(isExist){
-      throw new BadRequestException('Role name already exist')
-    }
-
     return await this.roleModel.updateOne({_id:id},{
       ...updateRoleDto,
       updatedBy:{
@@ -94,8 +87,16 @@ export class RolesService {
   }
 
  async remove(id: string,user: IUser) {
-    if (!mongoose.Types.ObjectId.isValid(id))
-      throw new NotFoundException(`Not found permission with id = ${id}`)
+  const foundRole = await this.roleModel.findById(id)
+    
+    if(!foundRole){
+      throw new NotFoundException('Role not found')
+    }
+
+    if(foundRole.name === "ADMIN"){
+      throw new BadRequestException('Cannot delete role Admin')
+    }
+
     await this.roleModel.updateOne(
       { _id: id },
       {

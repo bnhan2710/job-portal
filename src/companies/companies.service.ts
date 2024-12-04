@@ -48,7 +48,7 @@ export class CompaniesService {
     return {
       meta:{ 
         current: currentPage,
-        pageSize: limit,
+        pageSize: defaultLimit,
         total: totalItems,
         totalPage
       },

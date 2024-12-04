@@ -33,20 +33,19 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         if (err || !user) {
           throw err || new UnauthorizedException("Token is invalid or expired");
         }
-
+        
         //check permissions
         const targetMethod = request.method;
         const targetEndpoint = request.route.path as string;
         const permissions = user?.permissions ?? [];
-        let canAccess = permissions.find(
-          (permissions: { apiPath: any; method: string }) => {
-            return (
-              permissions.apiPath === targetEndpoint &&
-              permissions.method === targetMethod
-            );
-          },
-        );
+
+        let canAccess = permissions.some(permission =>
+          targetMethod === permission.method &&
+          targetEndpoint === permission.apiPath
+      );
+
         if (targetEndpoint.startsWith('/api/v1/auth')) canAccess = true;
+
         if(!canAccess)
         {
           throw new ForbiddenException('You are not allow to access this endpoint')

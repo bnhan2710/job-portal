@@ -54,7 +54,7 @@ export class JobsService {
     return {
       meta:{ 
         current: currentPage,
-        pageSize: limit,
+        pageSize: defaultLimit,
         total: totalItems,
         totalPage
       },
@@ -86,7 +86,7 @@ export class JobsService {
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new BadRequestException(`Not found resume with id=${id}`);
     await this.jobModel.updateOne({_id:id}, {
-      updatedBy:{
+      deletedByBy:{
         _id: user._id,
         email: user.email
       }

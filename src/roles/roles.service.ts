@@ -55,7 +55,7 @@ export class RolesService {
   return {
     meta:{ 
       current: currentPage,
-      pageSize: limit,
+      pageSize: defaultLimit,
       total: totalItems,
       totalPage
     },

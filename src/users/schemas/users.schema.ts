@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Role } from '../../roles/schemas/role.schemas';
-
+import { BaseSchema } from 'src/common/base.schema';
+import { extend } from 'dayjs';
 export type UserDocument = HydratedDocument<User>
 export class IUserSchema {
   _id: mongoose.Schema.Types.ObjectId;
@@ -9,7 +10,7 @@ export class IUserSchema {
 }
 
 @Schema({ timestamps: true })
-export class User {
+export class User extends BaseSchema{
   @Prop()
   name: string;
 
@@ -39,37 +40,6 @@ export class User {
 
   @Prop()
   refreshToken: string;
-
-  @Prop({ type: Object })
-  updatedBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
-
-  @Prop({ type: Object })
-  createdBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
-
-  @Prop({ type: Object })
-  deletedBy: {
-    _id: mongoose.Schema.Types.ObjectId,
-    email: string
-  }
-  
-  @Prop()
-  isDeleted: boolean
- 
-  @Prop()
-  createdAt: Date;
-
-  @Prop()
-  updatedAt: Date;
-
-
-  @Prop()
-  deletedAt: Date
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -6,9 +6,13 @@ import { Public, ResponseMessage } from '../decorator/customize';
 import { RegisterDto } from '../users/dto/create-user.dto';
 import { IUser } from 'src/users/users.interface';
 import { User } from '../decorator/customize';
+import { RolesService } from '../roles/roles.service';
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private rolesService: RolesService
+  ) {}
 
   @Public()
   @UseGuards(LocalAuthGuard)
@@ -29,10 +33,10 @@ export class AuthController {
 
   @Get('account')
   @ResponseMessage("Get user information")
-  getProfile(@User() user:IUser) {
-    return {
-      user
-    }
+  async getProfile(@User() user:IUser) {
+    const result = await this.rolesService.findOne(user.role._id) as any ;
+    user.permissions = result.permissions
+    return {user}
   }
 
   @Public()

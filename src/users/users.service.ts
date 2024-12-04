@@ -1,21 +1,27 @@
-import { BadGatewayException, BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/users.schema';
-import mongoose, { Model, now } from 'mongoose';
+import mongoose from 'mongoose';
 import { genSaltSync, hashSync ,compareSync } from 'bcryptjs';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { NotFoundError } from 'rxjs';
 import { IUser } from './users.interface';
 import aqp from 'api-query-params';
+import { USER_ROLE } from '../databases/sample';
+import { Role,RoleDocument } from '../roles/schemas/role.schemas';
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel(User.name) 
-    private userModel: SoftDeleteModel<UserDocument>) {}
+    constructor(
+    @InjectModel(User.name) 
+    private userModel: SoftDeleteModel<UserDocument>,
+    
+    @InjectModel(Role.name)
+    private roleModel : SoftDeleteModel<RoleDocument>
+  ){}
 
-    public genHashPassword(password: string): string {
+    public genHashPassword(password: string) {
         const salt = genSaltSync(10);
         return hashSync(password, salt);
     }
@@ -25,10 +31,14 @@ export class UsersService {
         if(isExist){
             throw new BadRequestException('Email already exist!')
         }
+
+        const userRole = await this.roleModel.findOne({name: USER_ROLE});
+
         const hashPassword = this.genHashPassword(createUserDto.password)
         const user = await this.userModel.create({
             ...createUserDto,
-            password:hashPassword
+            password:hashPassword,
+            role: userRole?._id
         })
         const {_id, createdAt} = user 
         return {
@@ -96,7 +106,7 @@ async findOne(id: string) {
     async findOnebyUsername(username:string){
         return this.userModel.findOne({
             email: username
-          }).populate({path:"role", select: {name:1, permissions :1}})
+          }).populate({path:"role", select: {name:1}})
     }
 
     async checkUserPassword(password:string,hash:string){
@@ -148,5 +158,9 @@ async findOne(id: string) {
 
     findUserByToken = async(refresh_token: string) => {
       return await this.userModel.findOne({refreshToken:refresh_token})
+      .populate({
+        path: "role",
+        select: {name:1}
+      })
     }
 }

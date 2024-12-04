@@ -7,12 +7,14 @@ import { RegisterDto } from '../users/dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 import { Request, Response } from 'express';
+import { RolesService } from '../roles/roles.service';
 @Injectable()
 export class AuthService {
     constructor(
         private usesrService:UsersService,
         private jwtService:JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private rolesService : RolesService
     ){}
 
     //check user and password 
@@ -22,8 +24,13 @@ export class AuthService {
             if(user){
            const isValid = await this.usesrService.checkUserPassword(pass,user.password)
             if(isValid){
-                const {password,...result} = user.toObject()
-                return result; 
+                const userRole = user.role as unknown as { _id: string , name: string}
+                const temp = await this.rolesService.findOne(userRole._id)
+                const objUser = {
+                    ...user.toObject(),
+                    permissions: temp?.permissions ?? []
+                }
+                return objUser; 
                 }
             }
             return null
@@ -31,14 +38,14 @@ export class AuthService {
     //sign and return access_token
     async login(user: IUser,response: Response) {
 
-        const { _id, name, email, role } = user;
+        const { _id, name, email, role, permissions  } = user;
         const payload = {
             sub: 'Token login',
             iss: 'From server',
             _id,
             name,
             email,
-            role
+            role,
         };
 
         const refresh_token = this.createRefreshToken(payload)
@@ -55,7 +62,8 @@ export class AuthService {
             _id,
             name,
             email,
-            role
+            role,
+            permissions
           }
         };
       }
@@ -98,18 +106,24 @@ export class AuthService {
             const refresh_token = this.createRefreshToken(payload)
         
             await this.usesrService.updateUserToken(refresh_token,_id.toString())
+
+            const userRole = user.role as unknown as {_id: string, name: string }
+            const temp =  await this.rolesService.findOne(userRole._id)
+
             response.clearCookie("refresh_token")
             response.cookie('refresh_token', refresh_token, { 
                 httpOnly:true,
                 maxAge:ms(this.configService.get<string>('JWT_REFRESH_EXPIRE'))
             })
+
             return {
               access_token: this.jwtService.sign(payload),
               user:{
                 _id,
                 name,
                 email,
-                role
+                role,
+                permissions:  temp?.permissions ?? []
               }
             };
         }catch(err){

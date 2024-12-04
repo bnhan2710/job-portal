@@ -2,11 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { IUserSchema } from '../../users/schemas/users.schema';
 import { ICompanySchema } from '../../companies/schemas/company.schema';
+import { BaseSchema } from '../../common/base.schema';
 
 export type JobDocument = HydratedDocument<Job>;
 
 @Schema({ timestamps: true })
-export class Job {
+export class Job extends BaseSchema{
   @Prop()
   name: string;
 
@@ -42,27 +43,6 @@ export class Job {
 
   @Prop()
   isActive: boolean;
-
-  @Prop({ type: Object })
-  createdBy: IUserSchema;
-
-  @Prop({ type: Object })
-  updatedBy: IUserSchema;
-
-  @Prop({ type: Object })
-  deletedBy: IUserSchema;
-
-  @Prop()
-  createdAt: Date;
-
-  @Prop()
-  updatedAt: Date;
-
-  @Prop()
-  deletedAt: Date;
-
-  @Prop()
-  isDeleted: boolean;
 }
 
 export const JobSchema = SchemaFactory.createForClass(Job);

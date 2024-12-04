@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { IUserSchema } from '../../users/schemas/users.schema';
 import { Company } from '../../companies/schemas/company.schema';
 import { Job } from '../../jobs/schemas/job.schema';
+import { BaseSchema } from '../../common/base.schema';
 
 export type ResumeDocument = HydratedDocument<Resume>;
 
@@ -13,7 +14,7 @@ class IHistorySchema {
   
 }
 @Schema({ timestamps: true })
-export class Resume {
+export class Resume extends BaseSchema{
   @Prop()
   email: string;
 
@@ -35,26 +36,6 @@ export class Resume {
   @Prop()
   history: IHistorySchema[]
 
-  @Prop({ type: Object })
-  createdBy: IUserSchema;
-
-  @Prop({ type: Object })
-  updatedBy: IUserSchema;
-
-  @Prop({ type: Object })
-  deletedBy: IUserSchema;
-
-  @Prop()
-  createdAt: Date;
-
-  @Prop()
-  updatedAt: Date;
-
-  @Prop()
-  deletedAt: Date;
-
-  @Prop()
-  isDeleted: boolean;
 }
 
 export const ResumeSchema = SchemaFactory.createForClass(Resume);

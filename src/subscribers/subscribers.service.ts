@@ -67,17 +67,15 @@ export class SubscribersService {
   }
 
  async update(id: string, updateSubscriberDto: UpdateSubscriberDto, user: IUser) {
-  const subscriber = await this.subscriberModel.findById(id)
-   if(!subscriber){
-    throw new NotFoundException('Not found subscriber')
-  }
-  return await this.subscriberModel.updateOne({_id:id},{
+  return await this.subscriberModel.updateOne(
+    { email:user.email }, {
     ...updateSubscriberDto,
     updatedBy:{
       _id: user._id,
       email: user.email
     }
-  })
+  },
+  { upsert:true })
   }
 
   async remove(id: string, user: IUser) {
@@ -92,5 +90,11 @@ export class SubscribersService {
       }
     })
     return await this.subscriberModel.softDelete({_id:id})
+  }
+
+  async getSkills(user:IUser){
+    const {email} = user
+    await this.subscriberModel.findOne({email}, { skills:1}) 
+
   }
 }

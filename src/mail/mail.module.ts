@@ -31,7 +31,7 @@ import {
             strict: true,
           },
         }, 
-        preview: true,
+        preview: false,
       }),
       inject: [ConfigService],
     }),

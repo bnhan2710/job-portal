@@ -28,8 +28,8 @@ import { HealthModule } from './health/health.module';
     }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot({
-      ttl:60,
-      limit:10
+      ttl: 60000,
+      limit: 10,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

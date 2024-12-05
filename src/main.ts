@@ -7,6 +7,8 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { TransformInterceptor } from './core/transform.interceptor';
 import cookieParser from "cookie-parser"
+import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
@@ -18,6 +20,7 @@ async function bootstrap() {
   app.useGlobalGuards(new JwtAuthGuard(reflector))
   app.use(cookieParser());
   app.useStaticAssets(join(__dirname, '..', 'public'));
+  //config cors
   app.enableCors(
     {
       "origin": true,
@@ -27,11 +30,36 @@ async function bootstrap() {
     }
   )
 
+  //config version
   app.setGlobalPrefix('api')
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: ['1','2'],
   })
+  app.use(helmet())
+
+  //config swagger
+  const config = new DocumentBuilder()
+    .setTitle('NestJS APIs Document')
+    .setDescription('All Modules APIs')
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'Bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+      },
+      'access-token',
+    )
+    .addSecurityRequirements('access-token')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
+
   await app.listen(configService.get('PORT'));
 }
 bootstrap();

@@ -17,6 +17,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseMessage, User } from '../decorator/customize';
 import { IUser } from '../users/users.interface';
 import { Public } from '../decorator/customize';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}

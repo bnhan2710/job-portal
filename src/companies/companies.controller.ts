@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, UseGu
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Public, ResponseMessage, User } from '../decorator/customize';
 import { IUser } from '../users/users.interface';
 import { ApiTags } from '@nestjs/swagger';
